@@ -105,20 +105,22 @@ theorem PEqualNP.Outside.R_meta_8145_314
       g.op = GateOp.and ∨ g.op = GateOp.or := by
     have h := (hM g hg).1
     simpa using h
+  have andEval (xs : List Bool) : GateOp.and.eval xs = xs.all id := rfl
+  have orEval (xs : List Bool) : GateOp.or.eval xs = xs.any id := rfl
   have gateOp_eval_mono (op : GateOp) (hop : op = GateOp.and ∨ op = GateOp.or)
       (l1 l2 : List Bool) (hlen : l1.length = l2.length)
       (hmono : ∀ p (hp1 : p < l1.length) (hp2 : p < l2.length), l1[p] = true → l2[p] = true) :
       op.eval l1 = true → op.eval l2 = true := by
     rcases hop with rfl | rfl
     · intro h1
-      simp only [GateOp.eval, List.all_eq_true, id_eq] at h1 ⊢
+      simp only [andEval, orEval, List.all_eq_true, id_eq] at h1 ⊢
       intro b hb
       rw [List.mem_iff_getElem] at hb
       obtain ⟨p, hp2, rfl⟩ := hb
       have hp1 : p < l1.length := by omega
       exact hmono p hp1 hp2 (h1 l1[p] (List.getElem_mem hp1))
     · intro h1
-      simp only [GateOp.eval, List.any_eq_true, id_eq] at h1 ⊢
+      simp only [andEval, orEval, List.any_eq_true, id_eq] at h1 ⊢
       obtain ⟨b, hb, rfl⟩ := h1
       rw [List.mem_iff_getElem] at hb
       obtain ⟨p, hp1, hbp⟩ := hb
@@ -136,10 +138,8 @@ theorem PEqualNP.Outside.R_meta_8145_314
     split_ifs <;> omega
   let constGate (b : Bool) : Gate :=
     if b then ⟨GateOp.and, []⟩ else ⟨GateOp.or, []⟩
-  let isAbsorbOp : Bool → GateOp → Bool
-    | true, GateOp.or => true
-    | false, GateOp.and => true
-    | _, _ => false
+  let isAbsorbOp (b : Bool) (op : GateOp) : Bool :=
+    if b then decide (op = GateOp.or) else decide (op = GateOp.and)
   let rewriteGateConst (n k : ℕ) (b : Bool) (g : Gate) : Gate :=
     if n + k ∈ g.inputs then
       if isAbsorbOp b g.op then constGate b
@@ -234,11 +234,11 @@ theorem PEqualNP.Outside.R_meta_8145_314
         unfold rewriteGateConst
         split_ifs with hmem habs
         · rcases b with _ | _ <;> rcases hg_op with hop | hop
-          · simp [constGate, hop, GateOp.eval]
+          · simp [constGate, hop, andEval, orEval]
             exact ⟨n + k, hmem, hval_k⟩
           · simp [isAbsorbOp, hop] at habs
           · simp [isAbsorbOp, hop] at habs
-          · simp [constGate, hop, GateOp.eval]
+          · simp [constGate, hop, andEval, orEval]
             exact ⟨n + k, hmem, hval_k⟩
         · have hmap : ((g.inputs.filter (fun u => decide (u ≠ n + k))).map (shiftW n k)).map
               (fun u' => ((elimConst n k b C).wires x).getD u' false) =
@@ -265,7 +265,7 @@ theorem PEqualNP.Outside.R_meta_8145_314
           · simp [isAbsorbOp, hop] at habs
           · rw [hop]
             rw [Bool.eq_iff_iff]
-            simp only [GateOp.eval, List.any_eq_true, List.mem_map,
+            simp only [andEval, orEval, List.any_eq_true, List.mem_map,
               List.mem_filter, decide_eq_true_eq, id_eq]
             constructor
             · rintro ⟨_, ⟨u, ⟨hu_in, _⟩, rfl⟩, hu_t⟩
@@ -276,7 +276,7 @@ theorem PEqualNP.Outside.R_meta_8145_314
               exact ⟨_, ⟨u, ⟨hu_in, hu_ne⟩, rfl⟩, hu_t⟩
           · rw [hop]
             rw [Bool.eq_iff_iff]
-            simp only [GateOp.eval, List.all_eq_true, List.mem_map,
+            simp only [andEval, orEval, List.all_eq_true, List.mem_map,
               List.mem_filter, decide_eq_true_eq, id_eq]
             constructor
             · rintro hall _ ⟨u, hu_in, rfl⟩
@@ -440,7 +440,7 @@ theorem PEqualNP.Outside.R_meta_8145_314
     have yes := on 0 0 (by decide)
     change (C.wires (List.ofFn (edge 0 0))).getD C.output false = true at yes
     have len : (C.wires (List.ofFn (edge 0 0))).length = 26 + C.size := by
-      unfold Circuit.wires; rw [size_wires]; simp [Circuit.size]
+      unfold Circuit.wires; rw [size_wires, List.length_ofFn]; rfl
     rw [List.getD_eq_default _ _ (len ▸ ge)] at yes
     contradiction
   obtain ⟨D,hm,hr,sm,sim⟩ := erase 26 C i good.1 good.2.1 op within wire_ne
@@ -516,10 +516,10 @@ theorem PEqualNP.Outside.R_meta_8145_314
         g.op.eval (g.inputs.map fun i => b.getD i false) = true := by
       have hop : g.op = .and ∨ g.op = .or := by simpa using hg
       rcases hop with hop | hop
-      · simp only [hop, GateOp.eval, List.all_map, List.all_eq_true, Function.comp_def, id_eq]
+      · simp only [hop, andEval, orEval, List.all_map, List.all_eq_true, Function.comp_def, id_eq]
         intro ha i hi
         exact h i (ha i hi)
-      · simp only [hop, GateOp.eval, List.any_map, List.any_eq_true, Function.comp_def, id_eq]
+      · simp only [hop, andEval, orEval, List.any_map, List.any_eq_true, Function.comp_def, id_eq]
         rintro ⟨i, hi, ha⟩
         exact ⟨i, hi, h i ha⟩
 

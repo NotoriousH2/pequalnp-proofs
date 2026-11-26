@@ -15,18 +15,20 @@ theorem PEqualNP.Outside.R_meta_4949_314
       ∀ x : Fin 26 → Bool, circuitFun 26 C x=false →
       let Z := fun s : Finset E => s=∅ ∨ ∃ i : Fin 26, x i=false ∧ ∀ e ∈ s, P e i=true
       Q.foldl step Z Finset.univ)
-    (exclude : let E := Fin 4 × Fin 13
-    let step := fun (Z : Finset E → Prop) (q : Finset E × Finset E) (s : Finset E) =>
+    (exclude : let K := Fin 13
+    let E := Fin 4 × K
+    let M := Finset E
+    let step := fun (Z : M → Prop) (q : M × M) (s : M) =>
       Z s ∨ (Z q.1 ∧ Z q.2 ∧ s ⊆ q.1 ∪ q.2)
     let P := fun (e : E) (i : Fin 26) =>
-      let p := e.2 + Fin.ofNat 13 (([0,1,3,9] : List ℕ).getD e.1.val 0)
-      decide (i=Fin.castAdd 13 p ∨ i=Fin.natAdd 13 e.2)
-    ∀ (I : List (Finset E × Finset E)) (T : Finset (Finset E)),
-      (∀ q ∈ I, q.1 ∪ q.2 ≠ Finset.univ) → (∀ m ∈ ([7,13,19,21,25,29,35,37,39,41,67,69,71,73,77,81,83,85,97,101,105,131,133,135,137,141,195,201,265,273,275,281,297,329,337,549] : List ℕ), ∀ k : Fin 13,
-      let X := Finset.univ.filter fun p : Fin 13 => m.testBit (p-k).val
+      decide (i=Fin.castAdd 13 (e.2 + Fin.ofNat 13 (([0,1,3,9] : List ℕ).getD e.1.val 0)) ∨
+        i=Fin.natAdd 13 e.2)
+    ∀ (I : List (M × M)) (T : Finset (M)),
+      (∀ q ∈ I, q.1 ∪ q.2 ≠ Finset.univ) → (∀ m ∈ ([7,13,19,21,25,29,35,37,39,41,67,69,71,73,77,81,83,85,97,101,105,131,133,135,137,141,195,201,265,273,275,281,297,329,337,549] : List ℕ), ∀ k : K,
+      let X := Finset.univ.filter fun p : K => m.testBit (p-k).val
       let x := fun (i : Fin 26) => decide ((∃ p ∈ X, i=Fin.castAdd 13 p) ∨
-        ∃ l : Fin 13, i=Fin.natAdd 13 l ∧ ∀ p ∈ X, p ∉ PEqualNP.HeptadCover.singerLines3 l)
-      let Z := fun s : Finset E => s=∅ ∨ ∃ i : Fin 26, x i=false ∧ ∀ e ∈ s, P e i=true
+        ∃ l : K, i=Fin.natAdd 13 l ∧ ∀ p ∈ X, p ∉ PEqualNP.HeptadCover.singerLines3 l)
+      let Z := fun s : M => s=∅ ∨ ∃ i : Fin 26, x i=false ∧ ∀ e ∈ s, P e i=true
       let D := I.foldl step Z
       D Finset.univ ∨ ∃ a ∈ T, D a ∧ D aᶜ) → 51 ≤ I.length + T.card) :
     ∀ (x1 : PEqualNP.CircuitLowerBounds.Circuit),   PEqualNP.MetaComplexity.Monotone2 x1 →     (∀ (x3 x4 : Fin (13 : ℕ)), x3 = x4 ∨ x3 = x4 + (1 : Fin (13 : ℕ)) ∨ x3 = x4 + (3 : Fin (13 : ℕ)) ∨ x3 = x4 + (9 : Fin (13 : ℕ)) → (PEqualNP.MetaComplexity.circuitFun ((13 : ℕ) + (13 : ℕ)) x1 fun (x6 : Fin ((13 : ℕ) + (13 : ℕ))) => Decidable.decide (x6 = Fin.castAdd (13 : ℕ) x3 ∨ x6 = Fin.natAdd (13 : ℕ) x4)) = Bool.true) →       (∀ (x4 : ℕ) (x5 : Fin (13 : ℕ)),           (x4 ∈               have x6 : List ℕ :=                 have x6 : List ℕ :=                   have x6 : List ℕ := [(281 : ℕ), (297 : ℕ), (329 : ℕ), (337 : ℕ), (549 : ℕ)];                   (201 : ℕ) :: (265 : ℕ) :: (273 : ℕ) :: (275 : ℕ) :: x6;                 have x7 : List ℕ := (133 : ℕ) :: (135 : ℕ) :: (137 : ℕ) :: (141 : ℕ) :: (195 : ℕ) :: x6;                 (97 : ℕ) :: (101 : ℕ) :: (105 : ℕ) :: (131 : ℕ) :: x7;               have x7 : List ℕ :=                 have x7 : List ℕ := (73 : ℕ) :: (77 : ℕ) :: (81 : ℕ) :: (83 : ℕ) :: (85 : ℕ) :: x6;                 (41 : ℕ) :: (67 : ℕ) :: (69 : ℕ) :: (71 : ℕ) :: x7;               have x8 : List ℕ := (25 : ℕ) :: (29 : ℕ) :: (35 : ℕ) :: (37 : ℕ) :: (39 : ℕ) :: x7;               (7 : ℕ) :: (13 : ℕ) :: (19 : ℕ) :: (21 : ℕ) :: x8) →             have x7 : Finset (Fin (13 : ℕ)) := {x7 : Fin (13 : ℕ) | x4.testBit ↑(x7 - x5) = Bool.true};             (PEqualNP.MetaComplexity.circuitFun ((13 : ℕ) + (13 : ℕ)) x1 fun (x8 : Fin ((13 : ℕ) + (13 : ℕ))) => Decidable.decide ((∃ x9 ∈ x7, x8 = Fin.castAdd (13 : ℕ) x9) ∨ ∃ (x9 : Fin (13 : ℕ)), x8 = Fin.natAdd (13 : ℕ) x9 ∧ ∀ x10 ∈ x7, ¬(x10 = x9 ∨ x10 = x9 + (1 : Fin (13 : ℕ)) ∨ x10 = x9 + (3 : Fin (13 : ℕ)) ∨ x10 = x9 + (9 : Fin (13 : ℕ))))) = Bool.false) →         (51 : ℕ) ≤ {x5 : Fin x1.gates.length | (x1.gates.get x5).op = PEqualNP.CircuitLowerBounds.GateOp.or}.ncard := by

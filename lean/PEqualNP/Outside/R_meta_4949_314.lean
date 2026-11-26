@@ -19,14 +19,13 @@ theorem PEqualNP.Outside.R_meta_4949_314
     let step := fun (Z : Finset E → Prop) (q : Finset E × Finset E) (s : Finset E) =>
       Z s ∨ (Z q.1 ∧ Z q.2 ∧ s ⊆ q.1 ∪ q.2)
     let P := fun (e : E) (i : Fin 26) =>
-      let p := e.2 + ([0,1,3,9] : List (Fin 13)).getD e.1.val 0
+      let p := e.2 + Fin.ofNat 13 (([0,1,3,9] : List ℕ).getD e.1.val 0)
       decide (i=Fin.castAdd 13 p ∨ i=Fin.natAdd 13 e.2)
     ∀ (I : List (Finset E × Finset E)) (T : Finset (Finset E)),
-      (∀ q ∈ I, q.1 ∪ q.2 ≠ Finset.univ) → (∀ (r : Fin 36) (k : Fin 13),
-      let m := ((1259886254397126488781191988044141515605159741757169136265957107063160921435871760439256437543488169396155399 : ℕ) >>> (10*r.val)) % 1024
+      (∀ q ∈ I, q.1 ∪ q.2 ≠ Finset.univ) → (∀ m ∈ ([7,13,19,21,25,29,35,37,39,41,67,69,71,73,77,81,83,85,97,101,105,131,133,135,137,141,195,201,265,273,275,281,297,329,337,549] : List ℕ), ∀ k : Fin 13,
       let X := Finset.univ.filter fun p : Fin 13 => m.testBit (p-k).val
       let x := fun (i : Fin 26) => decide ((∃ p ∈ X, i=Fin.castAdd 13 p) ∨
-        ∃ l : Fin 13, i=Fin.natAdd 13 l ∧ ∀ p ∈ X, ¬(p=l ∨ p=l+1 ∨ p=l+3 ∨ p=l+9))
+        ∃ l : Fin 13, i=Fin.natAdd 13 l ∧ ∀ p ∈ X, p ∉ PEqualNP.HeptadCover.singerLines3 l)
       let Z := fun s : Finset E => s=∅ ∨ ∃ i : Fin 26, x i=false ∧ ∀ e ∈ s, P e i=true
       let D := I.foldl step Z
       D Finset.univ ∨ ∃ a ∈ T, D a ∧ D aᶜ) → 51 ≤ I.length + T.card) :
@@ -34,11 +33,11 @@ theorem PEqualNP.Outside.R_meta_4949_314
   intro C hm hp hn
   let E := Fin 4 × Fin 13
   let P := fun (e : E) (i : Fin 26) =>
-      let p := e.2 + ([0,1,3,9] : List (Fin 13)).getD e.1.val 0
+      let p := e.2 + Fin.ofNat 13 (([0,1,3,9] : List ℕ).getD e.1.val 0)
       decide (i=Fin.castAdd 13 p ∨ i=Fin.natAdd 13 e.2)
   have accepts : ∀ e : E, circuitFun 26 C (P e) = true := by
     have h : ∀ e : Fin 4 × Fin 13,
-        let p := e.2 + ([0,1,3,9] : List (Fin 13)).getD e.1.val 0
+        let p := e.2 + Fin.ofNat 13 (([0,1,3,9] : List ℕ).getD e.1.val 0)
         p=e.2 ∨ p=e.2+1 ∨ p=e.2+3 ∨ p=e.2+9 := by decide +kernel
     exact fun e => hp _ e.2 (h e)
   obtain ⟨Q, size, reject⟩ := compile P C hm accepts
@@ -109,18 +108,24 @@ theorem PEqualNP.Outside.R_meta_4949_314
   obtain ⟨I,T,sz,proper,sim⟩ := pack Q
   rw [←size]
   apply Nat.le_trans (exclude I T proper ?_) sz
-  intro r k
-  let m := ((1259886254397126488781191988044141515605159741757169136265957107063160921435871760439256437543488169396155399 : ℕ) >>> (10*r.val)) % 1024
+  intro m hmasks k
   let X := Finset.univ.filter fun p : Fin 13 => m.testBit (p-k).val
   let x := fun (i : Fin 26) => decide ((∃ p ∈ X, i=Fin.castAdd 13 p) ∨
-    ∃ l : Fin 13, i=Fin.natAdd 13 l ∧ ∀ p ∈ X, ¬(p=l ∨ p=l+1 ∨ p=l+3 ∨ p=l+9))
+    ∃ l : Fin 13, i=Fin.natAdd 13 l ∧ ∀ p ∈ X, p ∉ PEqualNP.HeptadCover.singerLines3 l)
   refine sim _ ?_ Finset.univ ?_
   · intro a b sub hb
     rcases hb with rfl|⟨i,hi,all⟩
     · exact Or.inl (Finset.subset_empty.mp sub)
     · exact Or.inr ⟨i,hi,fun e he => all e (sub he)⟩
   apply reject x
-  let masks : List ℕ := [7,13,19,21,25,29,35,37,39,41,67,69,71,73,77,81,83,85,97,101,105,131,133,135,137,141,195,201,265,273,275,281,297,329,337,549]
-  have inside : ∀ j : Fin 36, ((1259886254397126488781191988044141515605159741757169136265957107063160921435871760439256437543488169396155399 : ℕ) >>> (10*j.val)) % 1024 ∈ masks := by decide +kernel
-  exact hn m k (inside r)
+  have inc : ∀ p l : Fin 13, p ∈ PEqualNP.HeptadCover.singerLines3 l ↔
+      p=l ∨ p=l+1 ∨ p=l+3 ∨ p=l+9 := by decide +kernel
+  let y := fun (i : Fin 26) => decide ((∃ p ∈ X, i=Fin.castAdd 13 p) ∨
+    ∃ l : Fin 13, i=Fin.natAdd 13 l ∧ ∀ p ∈ X, ¬(p=l ∨ p=l+1 ∨ p=l+3 ∨ p=l+9))
+  have xy : x=y := by
+    funext i
+    apply Bool.eq_iff_iff.mpr
+    simp only [x,y,decide_eq_true_eq,inc]
+  rw [xy]
+  exact hn m k hmasks
 

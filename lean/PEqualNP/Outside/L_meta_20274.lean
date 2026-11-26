@@ -1,5 +1,5 @@
 import PEqualNP.Defs
-namespace PEqualNP.Outside.L_meta_20274Aux
+namespace PEqualNP.Outside.L_meta_20274
 open PEqualNP.CircuitLowerBounds PEqualNP.MetaComplexity PEqualNP.Represents PEqualNP.TopForm
 private def advance (w : List Bool) (g : Gate) := w ++ [g.op.eval (g.inputs.map fun i => w.getD i false)]
 private def bit (b v : ℕ) := v.testBit b
@@ -103,7 +103,8 @@ theorem outputs : Represents (fun u v : Fin 8 => (11949254508291828630 : ℕ).te
   intro i j
   rw [pixel _ checked,checkedRows]
   exact bits i j
-end PEqualNP.Outside.L_meta_20274Aux
+end PEqualNP.Outside.L_meta_20274
 
 theorem PEqualNP.Outside.L_meta_20274 : PEqualNP.Represents.RepSizeAtMost (fun u v : Fin 8 => (11949254508291828630 : ℕ).testBit (8 * u.val + v.val)) 28 := by
-  exact ⟨PEqualNP.Outside.L_meta_20274Aux.circ,PEqualNP.Outside.L_meta_20274Aux.basis,by decide,PEqualNP.Outside.L_meta_20274Aux.outputs⟩
+  exact ⟨PEqualNP.Outside.L_meta_20274.circ,PEqualNP.Outside.L_meta_20274.basis,by decide,PEqualNP.Outside.L_meta_20274.outputs⟩
+

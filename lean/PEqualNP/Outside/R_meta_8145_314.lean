@@ -31,9 +31,9 @@ theorem PEqualNP.Outside.R_meta_8145_314
         ∀ i : Fin C.gates.length, (C.gates.get i).op = .and →
         (C.wires (List.ofFn two)).getD (26+i.val) false = true →
         let cut : Circuit := ⟨C.gates.set i.val ⟨.or,[]⟩,C.output⟩
-        2 ≤ (Finset.univ.filter (fun e : Fin 13 × Fin 13 => e.1-e.2 ∈ d ∧
-          (C.wires (List.ofFn (edge e.1 e.2))).getD (26+i.val) false = true ∧
-          cut.eval (List.ofFn (edge e.1 e.2)) = false)).card → 64 ≤ C.size) :
+        let lost := fun e : Fin 13 × Fin 13 =>
+          e.1-e.2 ∈ d ∧ cut.eval (List.ofFn (edge e.1 e.2)) = false
+        (∃ u v : Fin 13 × Fin 13, u ≠ v ∧ lost u ∧ lost v) → 64 ≤ C.size) :
     have x1 : Finset (Fin (13 : ℕ)) := {(0 : Fin (13 : ℕ)), (1 : Fin (13 : ℕ)), (3 : Fin (13 : ℕ)), (9 : Fin (13 : ℕ))}; have x2 : (Fin (26 : ℕ) → Bool) → Prop := fun (x2 : Fin (26 : ℕ) → Bool) => ∃ (x3 : Fin (13 : ℕ)) (x4 : Fin (13 : ℕ)), x3 - x4 ∈ x1 ∧ x2 (Fin.castAdd (13 : ℕ) x3) = Bool.true ∧ x2 (Fin.natAdd (13 : ℕ) x4) = Bool.true; have x3 : PEqualNP.CircuitLowerBounds.Circuit → Prop := fun (x3 : PEqualNP.CircuitLowerBounds.Circuit) => PEqualNP.MetaComplexity.Monotone2 x3 ∧ PEqualNP.MetaComplexity.NestedCover.ReadsBack (26 : ℕ) x3 ∧ ∀ (x4 : Fin (26 : ℕ) → Bool), x3.eval (List.ofFn x4) = Bool.true ↔ x2 x4; have x4 : Fin (26 : ℕ) → Fin (26 : ℕ) → Fin (26 : ℕ) → Bool := fun (x4 x5 x6 : Fin (26 : ℕ)) => Decidable.decide (x6 = x4 ∨ x6 = x5); have x5 : PEqualNP.CircuitLowerBounds.Circuit → Fin (26 : ℕ) → Fin (26 : ℕ) → Prop := fun (x5 : PEqualNP.CircuitLowerBounds.Circuit) (x6 x7 : Fin (26 : ℕ)) => ∃ (x8 : Fin x5.gates.length), (x5.gates.get x8).op = PEqualNP.CircuitLowerBounds.GateOp.and ∧ (x5.wires (List.ofFn (x4 x6 x7))).getD ((26 : ℕ) + ↑x8) Bool.false = Bool.true; ∀ (x6 : PEqualNP.CircuitLowerBounds.Circuit), x3 x6 → (∀ (x8 : PEqualNP.CircuitLowerBounds.Circuit), x3 x8 → x6.size ≤ x8.size) → x5 x6 (0 : Fin (26 : ℕ)) (1 : Fin (26 : ℕ)) → (64 : ℕ) ≤ x6.size := by
   classical
   let wireStep (w : List Bool) (g : Gate) : List Bool :=
@@ -445,22 +445,12 @@ theorem PEqualNP.Outside.R_meta_8145_314
     contradiction
   obtain ⟨D,hm,hr,sm,sim⟩ := erase 26 C i good.1 good.2.1 op within wire_ne
   have sound (x : Fin 26 → Bool) (h : D.eval (List.ofFn x) = true) := (good.2.2 x).1 ((sim x).2.1 h)
-  have live (p l : Fin 13) (e : p-l ∈ d) (lost : D.eval (List.ofFn (edge p l))=false) :
-      (C.wires (List.ofFn (edge p l))).getD (26+i.val) false = true := by
-    cases hv : (C.wires (List.ofFn (edge p l))).getD (26+i.val) false with
-    | true => rfl
-    | false =>
-      have eq := (sim _).2.2 hv
-      rw [lost,on p l e] at eq
-      contradiction
   by_cases first : ∃ p l : Fin 13, p-l ∈ d ∧ D.eval (List.ofFn (edge p l))=false
   · obtain ⟨p,l,ep,loss⟩ := first
     by_cases more : ∃ q m : Fin 13, q-m ∈ d ∧ (p≠q ∨ l≠m) ∧ D.eval (List.ofFn (edge q m))=false
     · obtain ⟨q,m,eq,ne,loss2⟩ := more
       apply multiple C good minimal i op hit
-      apply Finset.one_lt_card.mpr
-      refine ⟨(p,l),Finset.mem_filter.mpr ⟨Finset.mem_univ _,ep,live _ _ ep loss,((sim _).1).symm.trans loss⟩,
-        (q,m),Finset.mem_filter.mpr ⟨Finset.mem_univ _,eq,live _ _ eq loss2,((sim _).1).symm.trans loss2⟩,?_⟩
+      refine ⟨(p,l),(q,m),?_,⟨ep,((sim _).1).symm.trans loss⟩,⟨eq,((sim _).1).symm.trans loss2⟩⟩
       intro pairEq
       rcases ne with hp|hl
       · exact hp (congrArg Prod.fst pairEq)
